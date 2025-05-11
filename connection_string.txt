@@ -1,0 +1,11 @@
+format: protocol://username:password@host:port/database
+
+"postgres://postgres:postgres@localhost:8080/chirpy"
+
+go build -o out && ./out
+
+goose postgres <connection_string> up
+
+psql "postgres://postgres:postgres@localhost:8080/chirpy"
+
+goose postgres "postgres://postgres:postgres@localhost:8080/chirpy" up
