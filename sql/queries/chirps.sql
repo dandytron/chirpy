@@ -10,7 +10,8 @@ VALUES (
 RETURNING *;
 
 -- name: DeleteChirps :exec
-DELETE FROM chirps;
+DELETE FROM chirps
+WHERE id = $1;
 
 -- name: RetrieveAllChirps :many
 SELECT * FROM chirps

@@ -12,7 +12,6 @@ import (
 )
 
 func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("createUserHandler: entering handler")
 	// Parse JSON request
 	type parameters struct {
 		Email    string `json:"email"`
@@ -20,10 +19,8 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	log.Println("createUserHandler: beginning to decode request body")
 	params := parameters{}
 	err := decoder.Decode(&params)
-	log.Println("createUserHandler: decoded request body:", params.Email)
 	if err != nil {
 		log.Println("createUserHandler: error decoding:", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not decode http request", err)
@@ -38,7 +35,6 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Call SQLC to create user
-	log.Println("createUserHandler: about to call CreateUser")
 	dbUser, err := cfg.databaseQueries.CreateUser(r.Context(), database.CreateUserParams{
 		ID:             uuid.New(),
 		CreatedAt:      time.Now(),
@@ -46,7 +42,6 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		HashedPassword: hashedPW,
 		Email:          params.Email,
 	})
-	log.Println("createUserHandler: CreateUser returned")
 	if err != nil {
 		log.Println("createUserHandler: error creating user:", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not create user", err)
@@ -60,6 +55,5 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		UpdatedAt: dbUser.UpdatedAt,
 		Email:     dbUser.Email,
 	}
-	log.Println("createUserHandler: preparing response")
 	respondWithJSON(w, http.StatusCreated, user)
 }
