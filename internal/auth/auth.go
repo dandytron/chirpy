@@ -117,3 +117,21 @@ func MakeRefreshToken() (string, error) {
 	}
 	return hex.EncodeToString(randomData), nil
 }
+
+// This extracts the API key from the Authorization header, which is
+// expected to be in this format: Authorization: ApiKey THE_KEY_HERE
+
+func GetAPIKey(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+	if authHeader == "" {
+		return "", ErrNoAuthHeaderIncluded
+	}
+
+	// Check if it starts with "ApiKey "
+	if !strings.HasPrefix(authHeader, "ApiKey ") {
+		return "", errors.New("authorization header format must be 'ApiKey {KEY}'")
+	}
+
+	key := strings.TrimPrefix(authHeader, "ApiKey ")
+	return strings.TrimSpace(key), nil
+}

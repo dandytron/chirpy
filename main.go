@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -53,6 +54,7 @@ func main() {
 	if polkaAPIKey == "" {
 		log.Fatal("POLKA_KEY environment variable is not set")
 	}
+	fmt.Println("Loaded POLKA_KEY:", polkaAPIKey)
 	log.Println("Starting server...")
 
 	db, err := sql.Open("postgres", dbURL)
@@ -73,6 +75,7 @@ func main() {
 		databaseQueries: dbQueries,
 		platform:        platform,
 		jwtsecret:       jwtSecret,
+		polkaAPIKey:     polkaAPIKey,
 	}
 
 	mux := http.NewServeMux()

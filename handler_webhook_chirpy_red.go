@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/dandytron/chirpy.git/internal/auth"
 	"github.com/google/uuid"
 )
 
@@ -17,9 +20,30 @@ func (cfg *apiConfig) chirpyRedHandler(w http.ResponseWriter, r *http.Request) {
 		} `json:"data"`
 	}
 
+	// Check for an API key in the header. Format: Authorization: ApiKey THE_KEY_HERE
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "ApiKey ") {
+		respondWithError(w, http.StatusUnauthorized, "API key not found or malformed", nil)
+		return
+	}
+	webhookApiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not fetch API key from JSON header", err)
+		return
+	}
+	fmt.Println("Received API key:", webhookApiKey)
+	fmt.Println("Expected API key:", cfg.polkaAPIKey)
+	fmt.Println("Are they equal?", webhookApiKey == cfg.polkaAPIKey)
+	if webhookApiKey != cfg.polkaAPIKey {
+		respondWithError(w, http.StatusUnauthorized, "API key does not match our records", err)
+		return
+	}
+
+	// Grab the webhook params from the request body
 	decoder := json.NewDecoder(r.Body)
 	webhook := PolkaWebhook{}
-	err := decoder.Decode(&webhook)
+	err = decoder.Decode(&webhook)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
