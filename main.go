@@ -19,15 +19,17 @@ type apiConfig struct {
 	databaseQueries *database.Queries
 	platform        string
 	jwtsecret       string
+	polkaAPIKey     string
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Password  string
-	Email     string `json:"email"`
-	Token     string
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Password    string
+	Email       string `json:"email"`
+	Token       string
+	IsChirpyRed bool `json:"is_chirpy_red"`
 }
 
 func main() {
@@ -46,6 +48,10 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is not set")
+	}
+	polkaAPIKey := os.Getenv("POLKA_KEY")
+	if polkaAPIKey == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
 	}
 	log.Println("Starting server...")
 
@@ -85,6 +91,7 @@ func main() {
 
 	mux.HandleFunc("POST /api/users", apiCfg.createUserHandler)
 	mux.HandleFunc("PUT /api/users", apiCfg.updateCredentials)
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.chirpyRedHandler)
 
 	mux.HandleFunc("POST /api/chirps", apiCfg.createChirpHandler)
 	mux.HandleFunc("GET /api/chirps", apiCfg.retrieveAllChirpsHandler)
